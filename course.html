@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Playlist Viewer</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Animate.css for animations -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        body {
+            font-family: "Poppins", sans-serif;
+            background: #000000; /* Black background */
+            color: #FFFFFF; /* White text */
+            padding: 0;
+            margin: 0;
+        }
+        header {
+            background-color: #FFFFFF; /* White */
+            color: black;
+            padding: 10px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        header h1 {
+            margin: 0;
+            font-weight: bold;
+            font-size: 2.0em;
+        }
+        .refresh-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            transition: transform 0.3s;
+            border: 2px solid black; /* Circle border */
+            border-radius: 50%; /* Make it a circle */
+            padding: 5px; /* Add padding inside the circle */
+        }
+        .refresh-icon:hover {
+            transform: scale(1.2);
+        }
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            height: 0;
+            overflow: hidden;
+            border-radius: 15px;
+            box-shadow: 0 6px 12px rgba(255, 255, 255, 0.5);
+            transition: transform 0.4s, box-shadow 0.4s;
+        }
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        .video-wrapper:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 24px rgba(255, 255, 255, 0.7);
+        }
+        .playlist-badge, .video-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 5px 10px;
+            font-size: 0.9em;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: black;
+            border-radius: 5px;
+        }
+        .playlist-badge {
+            background-color: #FFFFFF; /* White for playlists */
+        }
+        .video-badge {
+            background-color: #CCCCCC; /* Light gray for videos */
+        }
+        footer {
+            background-color: #FFFFFF; /* White */
+            color: black;
+            padding: 15px;
+            text-align: center;
+            position: sticky;
+            bottom: 0;
+            box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.3);
+        }
+        footer p {
+            margin: 0;
+            font-size: 1em;
+        }
+        .video-title {
+            margin-top: 10px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #FFFFFF; /* White */
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>My Study Materials</h1>
+        <i class="fas fa-sync refresh-icon" id="refresh-icon" title="Refresh Content"></i>
+    </header>
+
+    <div class="container my-4">
+        <div class="row" id="content-container">
+            <!-- Content Thumbnails will be dynamically added here -->
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 YouTube Playlist Viewer</p>
+    </footer>
+
+    <!-- Bootstrap JS and Popper.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    <!-- Animate on Scroll Library -->
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            AOS.init({
+                duration: 1200, // Duration of animation in milliseconds
+            });
+            renderContent();
+        });
+
+        const content = [
+            { id: 1, src: "https://www.youtube.com/embed/videoseries?list=PLu0W_9lII9agq5TrH9XLIKQvv0iaF2X3w", title: "Playlist 1", type: "playlist" },
+            { id: 2, src: "https://www.youtube.com/embed/vpAJ0s5S2t0", title: "Video 1", type: "video" },
+            { id: 3, src: "https://www.youtube.com/embed/YFlx1C8XwR0", title: "Video 2", type: "video" },
+            { id: 4, src: "https://www.youtube.com/embed/aZb0iu4uGwA", title: "Video 3", type: "video" },
+            { id: 5, src: "https://www.youtube.com/embed/videoseries?list=PLfqMhTWNBTe137I_EPQd34TsgV6IO55pt", title: "Playlist 2", type: "playlist" },
+            { id: 6, src: "https://www.youtube.com/embed/UrsmFxEIp5k?si=-fAeQaoDn-BVlx1f", title: "Video 4", type: "video" },
+            { id: 7, src: "https://www.youtube.com/embed/gwWKnnCMQ5c?si=yp-VKx0-IWnuxrOP", title: "Video 5", type: "video" }
+        ];
+
+        function renderContent() {
+            const container = document.getElementById('content-container');
+            container.innerHTML = ''; // Clear the container
+
+            content.forEach(item => {
+                const col = document.createElement('div');
+                col.classList.add('col-12', 'col-md-6', 'mb-4'); // Bootstrap grid classes for two columns
+                col.setAttribute('data-aos', 'fade-up'); // AOS animation
+
+                const wrapper = document.createElement('div');
+                wrapper.classList.add('video-wrapper');
+                wrapper.addEventListener('click', () => {
+                    alert(`You clicked on ${item.title}`);
+                });
+
+                const iframe = document.createElement('iframe');
+                iframe.src = item.src;
+                iframe.title = item.title;
+                iframe.allowFullscreen = true;
+
+                const badge = document.createElement('div');
+                badge.classList.add(item.type === 'playlist' ? 'playlist-badge' : 'video-badge');
+                badge.textContent = item.type;
+
+                const title = document.createElement('div');
+                title.classList.add('video-title');
+                title.textContent = item.title;
+
+                wrapper.appendChild(iframe);
+                wrapper.appendChild(badge);
+                col.appendChild(wrapper);
+                col.appendChild(title);
+                container.appendChild(col);
+            });
+        }
+
+        document.getElementById('refresh-icon').addEventListener('click', () => {
+            renderContent();
+            alert('Content refreshed!');
+        });
+    </script>
+</body>
+</html>
